@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.UI;
@@ -73,15 +74,8 @@ public class EmpathManager : MonoBehaviour
         form.AddBinaryData("wav", wavbyte);
         string receivedJson = null;
 
-        using (WWW www = new WWW("https://api.webempath.net/v2/analyzeWav", form))
-        {
-            yield return www;
-            Debug.Log(www.text);
-            receivedJson = www.text;
-        }
+        using (UnityWebRequest www = UnityWebRequest.Post("https://api.webempath.net/v2/analyzeWav", form))         {             yield return www.SendWebRequest();              if (www.isNetworkError || www.isHttpError)             {                 Debug.Log(www.error);             }             else             {                 receivedJson = www.downloadHandler.text;                 Debug.Log(receivedJson);             }         }          EmpathData empathData = ConvertEmpathToJson(receivedJson);         empathResult.text = ConvertEmpathDataToString(empathData);
 
-        EmpathData empathData = ConvertEmpathToJson(receivedJson);
-        empathResult.text = ConvertEmpathDataToString(empathData);
     }
 
     public IEnumerator WavRecording(string micDeviceName, int maxRecordingTime, int samplingFrequency)
